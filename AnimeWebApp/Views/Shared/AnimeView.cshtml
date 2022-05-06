@@ -1,0 +1,41 @@
+﻿@model Anime
+<div class="my-4">
+	<div class="container">
+		<div class="row">
+			<div class="col-3" style="position: relative">
+				<h3 class="bg-warning" style="position: absolute;align-content: end">@Model.Rate</h3>
+				<img anime-id=@Model.IdFromAnimeGo class="img-fluid"/>
+
+			</div>
+			<div class="col-7">
+				<div>
+					<h5>@Model.NameRu</h5>
+				</div>
+				<div>
+					<u>Жанры:</u> @String.Join(", ", Model.Genres.Select(g => g.Name))
+				</div>
+				<div>
+					<u>Озвучка:</u> @String.Join(", ", Model.Voiceovers.Select(v => v.Name).Take(4))
+				</div>
+				
+				<p class="text-break mt-2">@Model.Description</p>
+				
+
+
+			</div>
+			<div class="col-2">
+				<table class="table table-sm table-striped" style="font-size: 0.5rem">
+					<thead>
+					<tr><td style="font-size: 0.75rem">В списках</td><tr/>
+					</thead>
+					<tr><td>Запланировано</td><td>@Model.Planned</td></tr>
+					<tr><td>Смотрят</td><td>@Model.Watching</td></tr>
+					<tr><td>Посмотрели</td><td>@Model.Completed</td></tr>
+					<tr><td>Заброшено</td><td>@Model.Dropped</td></tr>
+					<tr><td>Отложено</td><td>@Model.OnHold</td></tr>
+				</table>
+			</div>
+			
+		</div>
+	</div>
+</div>

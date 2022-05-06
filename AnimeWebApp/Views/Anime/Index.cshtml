@@ -1,0 +1,16 @@
+﻿@model AnimeIndexViewModel
+
+<div class="row">
+	<div class="col-9">
+		@foreach (var anime in Model.Anime)
+		{
+			@await Html.PartialAsync("AnimeView",anime)
+		}
+	</div>
+	<div class="col-3"></div>
+</div>
+
+		
+	
+
+
