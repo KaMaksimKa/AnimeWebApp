@@ -1,11 +1,38 @@
 ﻿@model AnimeIndexViewModel
 
-<div class="row">
+<div class="row mt-5">
 	<div class="col-9">
+		<div class="row">
+			<div class="col-7">
+				<div page-model=@Model.PagingInfo></div>
+			</div>
+			<div class="col-5">
+				<div class="row">
+					<div class="col-auto ms-2">
+						Сортировать по
+					</div>
+					<div class="col-6">
+						<div class="btn-group">
+							<button type="button" class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+								Дате добавления
+							</button>
+							<ul class="dropdown-menu dropdown-menu-dark dropdown-menu-start dropdown-menu-lg-start">
+								<li><a class="dropdown-item" href="#">Дате добавления</a></li>
+								<li><a class="dropdown-item" href="#">Рейтингу</a></li>
+								<li><a class="dropdown-item" href="#">Уже посмотрели</a></li>
+								<li><a class="dropdown-item" href="#">Смотрят сейчас</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
 		@foreach (var anime in Model.Anime)
 		{
-			@await Html.PartialAsync("AnimeView",anime)
+			@await Html.PartialAsync("AnimeView", anime)
 		}
+		<div page-model=@Model.PagingInfo></div>
 	</div>
 	<div class="col-3"></div>
 </div>

@@ -6,29 +6,66 @@ namespace AnimeWebApp.Controllers
 {
     public class AnimeController : Controller
     {
-        private IAnimeRepository _repository;
+        private readonly IAnimeRepository _repository;
         public int PageSize { get; set; } = 10;
         public AnimeController(IAnimeRepository repository)
         {
             _repository = repository;
         }
-        public IActionResult Index(int? page)
+        public IActionResult Index()
         {
-            return View(new AnimeIndexViewModel
+            
+
+            int totalPage = (int)Math.Ceiling((decimal)_repository.Anime.Count() / PageSize);
+
+            var pagingAnimeHandler = ControllerContext.RouteData.Values["pagingAnimeHandler"] as IPagingAnimeHandler;
+            if (pagingAnimeHandler != null)
             {
-                Anime = _repository.Anime.Skip(PageSize*((page ?? 1 )- 1)).Take(10),
-                PagingInfo = new PagingInfo()
-            } );
+                pagingAnimeHandler.AnimePerPage = PageSize;
+            }
+
+            var soringAnimeHandler = ControllerContext.RouteData.Values["sortingAnimeHandler"] as ISortingAnimeHandler;
+            if (soringAnimeHandler != null)
+            {
+                soringAnimeHandler.Next = pagingAnimeHandler;
+            }
+            
+
+
+            if (soringAnimeHandler?.Invoke(_repository.Anime, _repository.Anime.Select(a => a.AnimeId)) is { } anime)
+            {
+                return View(new AnimeIndexViewModel
+                {
+                    Anime = anime,
+                    PagingInfo = new PagingInfo
+                    {
+                        CurrentPage = pagingAnimeHandler?.NumberPage??-1,
+                        TotalPages = totalPage
+                    }
+                });
+            }
+            
+            
+            return NotFound();
+
         }
-        
-        public IActionResult Search(string searchString)
+
+
+        [Route("[controller]/[action]/{search}/page/{numberPage}")]
+        [Route("[controller]/[action]/{search}")]
+        public IActionResult Search(string search)
         {
             return View("Index", new AnimeIndexViewModel
             {
-                Anime = _repository.Anime.Where(a=>a.NameRu != null && a.NameRu.Contains(searchString)).Take(10),
+                Anime = _repository.Anime.Where(a=>a.NameRu == null || a.NameRu.Contains(search)).Take(10),
                 PagingInfo = new PagingInfo()
                 
             });
+        }
+        [HttpPost]
+        public RedirectToActionResult GetSearch(string search)
+        {
+            return RedirectToAction("Search", new {search = search, numberPage =2});
         }
     }
 }

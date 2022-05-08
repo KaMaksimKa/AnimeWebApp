@@ -1,9 +1,11 @@
 using System.Diagnostics;
+using AnimeWebApp.Infrastructure;
 using AnimeWebApp.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMvc(options =>options.EnableEndpointRouting=false );
+builder.Services.AddSingleton<PagingAnimeHandlersFactory>();
 builder.Services.AddDbContext<ApplicationContext>(optionsBuilder =>
 {
     optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -14,23 +16,16 @@ var app = builder.Build();
 
 app.UseStatusCodePages();
 app.UseDeveloperExceptionPage();
-app.UseStaticFiles();
-app.UseMvc(routeBuilder =>
+app.UseStaticFiles(); 
+
+ app.UseMvc(routeBuilder =>
 {
+    routeBuilder.Routes.Add(new AnimesRoute(routeBuilder.DefaultHandler!){DefaultSort = "date-add-desc"});
     routeBuilder.MapRoute(
-        name: null,
-        template: "anime/page{page:int}",
-        defaults: new { controller = "Anime",action = "Index" }
-    );
-    routeBuilder.MapRoute(
-        name:null,
-        template:"anime/{action}/page{page:int}",
-        defaults: new { controller = "Anime"}
+        name: "default",
+        template: "{controller=Anime}/{action=Index}/{id?}"
         );
-    routeBuilder.MapRoute(
-        name:"default",
-        template:"{controller=Anime}/{action=Index}/{id?}"
-        );
+    
 } );
 
 app.Run();
