@@ -8,7 +8,7 @@
         public SortingAnimeDescDecoratorHandler(ISortingAnimeHandler sortingAnimeHandler)
         {
             _sortingAnimeHandler = sortingAnimeHandler;
-            Path = $"{_sortingAnimeHandler.Path}-desc";
+            /*Path = $"{_sortingAnimeHandler.Path}-desc";*/
         }
         public IQueryable<Anime>? Invoke(IQueryable<Anime> anime, IQueryable<int> animeId)
         {

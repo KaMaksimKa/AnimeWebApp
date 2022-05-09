@@ -6,15 +6,13 @@ namespace AnimeWebApp.Infrastructure
     {
         private IRouter _mvcRouter;
         public string DefaultPage { get; set; } = "1";
-        private PagingAnimeHandlersFactory _pagingFactory;
-
         public string DefaultSort { get; set; } = "date-add";
-        private SortingAnimeHandlersFactory _sortingFactory;
+        public string DefaultFilter { get; set; } = "all";
+
+
         public AnimesRoute(IRouter mvcRouter)
         {
             _mvcRouter = mvcRouter;
-            _pagingFactory = new PagingAnimeHandlersFactory();
-            _sortingFactory = new SortingAnimeHandlersFactory();
         }
         public async Task RouteAsync(RouteContext context)
         {
@@ -40,8 +38,7 @@ namespace AnimeWebApp.Infrastructure
                 {
                     return;
                 }
-
-                context.RouteData.Values["pagingAnimeHandler"] = _pagingFactory.GetHandler(pathPage);
+                context.RouteData.Values["numberPage"] = pathPage;
 
 
                 pathList = path?.Split("sort").Select(s => s.Trim('/')).ToList();
@@ -59,9 +56,29 @@ namespace AnimeWebApp.Infrastructure
                 {
                     return;
                 }
+                context.RouteData.Values["sort"] = pathSort;
 
-                context.RouteData.Values["sortingAnimeHandler"] = _sortingFactory.GetHandler(pathSort);
 
+                pathList = path?.Split("filters").Select(s => s.Trim('/')).ToList();
+                string pathFilter;
+                if (pathList?.Count() == 1)
+                {
+                    pathFilter = DefaultFilter;
+                }
+                else if (pathList?.Count() == 2)
+                {
+                    pathFilter = pathList[1];
+                    path = pathList[0];
+                }
+                else
+                {
+                    return;
+                }
+                var filters = pathFilter.Split("/");
+                for (int i = 0; i < filters.Length ; i ++)
+                {
+                    context.RouteData.Values[$"filters[{i}]"] = filters[i];
+                }
 
                 context.RouteData.Routers.Add(_mvcRouter);
                 context.RouteData.Values["controller"] = "Anime";
@@ -79,11 +96,23 @@ namespace AnimeWebApp.Infrastructure
             {
                 string url = $"/{context.Values["controller"]}";
 
-                var sortingAnimeHalder = context.Values["sortingAnimeHandler"] as ISortingAnimeHandler;
-                url += sortingAnimeHalder?.Path != $"{DefaultSort}" ? $"/sort/{sortingAnimeHalder?.Path}" : "";
+                var filters = new List<object>();
+                var i = 1;
+                while (context.Values[$"filters[{i}]"] is {} value)
+                {
+                    filters.Add(value);
+                    i++;
+                }
 
-                var pagingAnimeHalder = context.Values["pagingAnimeHandler"] as IPagingAnimeHandler;
-                url += pagingAnimeHalder?.Path != $"{DefaultPage}"? $"/page/{pagingAnimeHalder?.Path}":"";
+                var pathFilters = string.Join('/', filters);
+                url += pathFilters != $"{DefaultFilter}" ? $"/filters/{pathFilters}" : "";
+
+
+                var sort = context.Values["sort"];
+                url += sort?.ToString() != $"{DefaultSort}" ? $"/sort/{sort}" : "";
+
+                var numberPage = context.Values["numberPage"];
+                url += numberPage?.ToString() != $"{DefaultPage}"? $"/page/{numberPage}":"";
 
                 return new VirtualPathData(this, url);
             }

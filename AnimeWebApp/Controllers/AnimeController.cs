@@ -7,47 +7,53 @@ namespace AnimeWebApp.Controllers
     public class AnimeController : Controller
     {
         private readonly IAnimeRepository _repository;
+        private readonly PagingAnimeHandlersFactory _pagerFactory;
+        private readonly SortingAnimeHandlersFactory _sorterFactory;
         public int PageSize { get; set; } = 10;
         public AnimeController(IAnimeRepository repository)
         {
             _repository = repository;
+            _pagerFactory = new PagingAnimeHandlersFactory();
+            _sorterFactory = new SortingAnimeHandlersFactory();
         }
-        public IActionResult Index()
+        public IActionResult Index(int numberPage, string sort,List<string> filters)
         {
-            
 
-            int totalPage = (int)Math.Ceiling((decimal)_repository.Anime.Count() / PageSize);
-
-            var pagingAnimeHandler = ControllerContext.RouteData.Values["pagingAnimeHandler"] as IPagingAnimeHandler;
-            if (pagingAnimeHandler != null)
+            var pagingAnimeHandler = _pagerFactory.GetHandler(numberPage,PageSize);
+            var soringAnimeHandler = _sorterFactory.GetHandler(sort);
+            if ( pagingAnimeHandler is {} && soringAnimeHandler is {})
             {
-                pagingAnimeHandler.AnimePerPage = PageSize;
-            }
 
-            var soringAnimeHandler = ControllerContext.RouteData.Values["sortingAnimeHandler"] as ISortingAnimeHandler;
-            if (soringAnimeHandler != null)
-            {
-                soringAnimeHandler.Next = pagingAnimeHandler;
-            }
-            
+                var totalPagesAnimeHandler = new GetingTotalPagesAnimeHandler{Next = pagingAnimeHandler,PageSize = PageSize};
+                soringAnimeHandler.Next = totalPagesAnimeHandler;
 
-
-            if (soringAnimeHandler?.Invoke(_repository.Anime, _repository.Anime.Select(a => a.AnimeId)) is { } anime)
-            {
-                return View(new AnimeIndexViewModel
+                if (soringAnimeHandler?.Invoke(_repository.Anime, _repository.Anime.Select(a => a.AnimeId)) is { } anime)
                 {
-                    Anime = anime,
-                    PagingInfo = new PagingInfo
+                    return View(new AnimeIndexViewModel
                     {
-                        CurrentPage = pagingAnimeHandler?.NumberPage??-1,
-                        TotalPages = totalPage
-                    }
-                });
+                        Anime = anime,
+                        PagingInfo = new PagingInfo
+                        {
+                            CurrentPage = numberPage,
+                            PageSize = PageSize,
+                            TotalPages = totalPagesAnimeHandler.TotalPages
+                        },
+                        SortingInfo = new SortingInfo
+                        {
+                            CurrentSort = sort,
+                            AllSorts = new Dictionary<string, string>
+                            {
+                                ["date-add-desc"] = "Дате добавления",
+                                ["rating-desc"] = "Рейтингу",
+                                ["completed-desc"] = "Уже посмотрели",
+                                ["watching-desc"] = "Смотрят сейчас"
+                            }
+                        }
+                    });
+                }
             }
-            
-            
-            return NotFound();
 
+            return NotFound();
         }
 
 

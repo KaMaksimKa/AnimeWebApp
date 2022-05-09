@@ -2,16 +2,14 @@
 {
     public class PagingAnimeHandlersFactory
     {
-        public IPagingAnimeHandler? GetHandler(string pathHandler)
+        public IPagingAnimeHandler? GetHandler(int numberPage)
         {
-            if (int.TryParse(pathHandler, out int numberPage))
-            {
-                return new PagingAnimeHandler { NumberPage = numberPage};
-            }
-            else
-            {
-                return null;
-            }
+            return new PagingAnimeHandler {NumberPage = numberPage};
         }
+        public IPagingAnimeHandler? GetHandler(int numberPage,int animePerPage)
+        {
+            return new PagingAnimeHandler { NumberPage = numberPage,AnimePerPage = animePerPage };
+        }
+
     }
 }

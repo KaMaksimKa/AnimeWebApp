@@ -23,7 +23,7 @@ app.UseStaticFiles();
     routeBuilder.Routes.Add(new AnimesRoute(routeBuilder.DefaultHandler!){DefaultSort = "date-add-desc"});
     routeBuilder.MapRoute(
         name: "default",
-        template: "{controller=Anime}/{action=Index}/{id?}"
+        template: "{controller}/{action=Index}/{id?}"
         );
     
 } );
