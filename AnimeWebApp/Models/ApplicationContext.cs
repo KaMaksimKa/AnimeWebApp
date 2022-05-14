@@ -12,6 +12,13 @@ namespace AnimeWebApp.Models
             
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            /*optionsBuilder.UseLazyLoadingProxies();*/
+            optionsBuilder.UseNpgsql(
+                "Host=localhost;Port=5432;Database=anime;Username=postgres;Password=ylikeMNjq7S8+");
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Anime>().HasIndex(a=>a.IdFromAnimeGo).IsUnique();

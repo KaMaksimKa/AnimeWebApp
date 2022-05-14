@@ -3,8 +3,8 @@
     public class Voiceover
     {
         public int VoiceoverId { get; set; }
-        public string Name { get; set; }
-        public int AnimeId { get; set; }
-        public Anime Anime { get; set; }
+        public string NameRu { get; set; }
+        public string NameEn { get; set; }
+        public virtual List<Anime> Anime { get; set; }
     }
 }

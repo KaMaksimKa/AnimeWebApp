@@ -12,10 +12,10 @@
 					<h5>@Model.NameRu</h5>
 				</div>
 				<div>
-					<u>Жанры:</u> @String.Join(", ", Model.Genres.Select(g => g.Name))
+					<u>Жанры:</u> @String.Join(", ", Model.Genres.Select(g => g.NameRu))
 				</div>
 				<div>
-					<u>Озвучка:</u> @String.Join(", ", Model.Voiceovers.Select(v => v.Name).Take(4))
+					<u>Озвучка:</u> @String.Join(", ", Model.Voiceovers.Select(v => v.NameRu).Take(4))
 				</div>
 				
 				<p class="text-break mt-2">@Model.Description</p>

@@ -7,9 +7,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\IPagingAnimeHandler.cs" />
+    <Compile Remove="Models\ISortingAnimeHandler.cs" />
+    <Compile Remove="Models\PagingAnimeHandlersFactory.cs" />
+    <Compile Remove="Models\SortingAnimeByCompletedHandler.cs" />
+    <Compile Remove="Models\SortingAnimeByDateAddHandler.cs" />
+    <Compile Remove="Models\SortingAnimeByRatingHandler.cs" />
+    <Compile Remove="Models\SortingAnimeByWatchingHandler.cs" />
+    <Compile Remove="Models\SortingAnimeDescDecoratorHandler.cs" />
+    <Compile Remove="Models\SortingAnimeDescHandler.cs" />
+    <Compile Remove="Models\StandartAnimeHandler.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="bootstrap" Version="5.1.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.4" />
   </ItemGroup>
 
 </Project>

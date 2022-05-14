@@ -27,6 +27,10 @@ namespace AnimeWebApp.Infrastructure.TagsHelper
             IUrlHelper urlHelper = _factory.GetUrlHelper(Context);
             RouteData newRouteData = new RouteData(Context.RouteData);
 
+            foreach (var (key,value) in Context.HttpContext.Request.Query)
+            {
+                newRouteData.Values[key] = value.ToString();
+            }
             output.Attributes.SetAttribute("class", "btn-group");
             var button = new TagBuilder("button");
             button.Attributes["type"] = "button";

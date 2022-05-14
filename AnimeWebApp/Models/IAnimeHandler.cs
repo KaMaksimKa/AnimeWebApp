@@ -3,6 +3,6 @@
     public interface IAnimeHandler
     {
         public IAnimeHandler? Next { get; set; }
-        public IQueryable<Anime>? Invoke(IQueryable<Anime> anime, IQueryable<int> animeId);
+        public IQueryable<Anime>? Invoke(IQueryable<Anime>? animes);
     }
 }

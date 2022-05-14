@@ -2,12 +2,11 @@
 {
     public class SortingAnimeDescHandler: ISortingAnimeHandler
     {
-        public string Path { get; } = "desc";
         public IAnimeHandler? Next { get; set; }
-        public IQueryable<Anime>? Invoke(IQueryable<Anime> anime, IQueryable<int> animeId)
+        public IEnumerable<Anime>? Invoke(IAnimeRepository context, List<int> animeId)
         {
-            animeId = animeId.Reverse();
-            return Next?.Invoke(anime, animeId);
+            animeId.Reverse();
+            return Next?.Invoke(context, animeId);
         }
     }
 }

@@ -1,23 +1,27 @@
 ﻿namespace AnimeWebApp.Models
 {
-    public class PagingAnimeHandler:IPagingAnimeHandler
+    public class PagingAnimeHandler:IAnimeHandler
     {
-        public int AnimePerPage { get; set; } = 10;
-        public int NumberPage { get; set; } = 1;
-        public IAnimeHandler? Next { get; set; } = new StandartAnimeHandler();
+        public int PageSize { get; set; }
+        public int NumberPage { get; set; }
 
-        public IQueryable<Anime>? Invoke(IQueryable<Anime> anime, IQueryable<int> animeId)
+        public PagingAnimeHandler(int numberPage,int pageSize)
         {
-            if (NumberPage > 0 && NumberPage<= Math.Ceiling((decimal)animeId.Count() / AnimePerPage))
+            PageSize = pageSize;
+            NumberPage = numberPage;
+        }
+        public IAnimeHandler? Next { get; set; }
+
+        public IQueryable<Anime>? Invoke(IQueryable<Anime>? animes)
+        {
+            if (NumberPage > 0)
             {
-                animeId = animeId.Skip(AnimePerPage * (NumberPage - 1)).Take(AnimePerPage);
-                return Next?.Invoke(anime, animeId);
+                return animes?.Skip(PageSize * (NumberPage - 1)).Take(PageSize);
             }
             else
             {
                 return null;
             }
-            
         }
     }
 }

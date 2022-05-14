@@ -27,8 +27,10 @@ namespace AnimeWebApp.Infrastructure.TagsHelper
         {
             IUrlHelper urlHelper = _factory.GetUrlHelper(Context);
             var routeData = new RouteValueDictionary(Context.RouteData.Values);
-            
-
+            foreach (var (key, value) in Context.HttpContext.Request.Query)
+            {
+                routeData[key] = value.ToString();
+            }
 
 
             string classForSelectedButton = "btn btn-primary btn-sm m-1";

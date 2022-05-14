@@ -10,7 +10,8 @@
         public string? Description { get; set; }
         public decimal? Rate { get; set; }
         public string? Status { get; set; }
-        public List<Genre> Genres { get; set; } = new List<Genre>();
+        public virtual List<Genre> Genres { get; set; } = new List<Genre>();
+        public virtual List<Voiceover> Voiceovers { get; set; } = new List<Voiceover>();
         public int? CountEpisode { get; set; }
         public string? MpaaRate { get; set; }
         public int? Planned { get; set; }
@@ -20,7 +21,6 @@
         public int? OnHold { get; set; }
         public string? Href { get; set; }
         public string? Studio { get; set; }
-        public List<Voiceover> Voiceovers { get; set; } = new List<Voiceover>();
         public string? NextEpisode { get; set; }
         public int? IdFromAnimeGo { get; set; }
         public string? Duration { get; set; }

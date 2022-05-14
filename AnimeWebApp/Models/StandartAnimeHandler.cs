@@ -4,11 +4,12 @@
     {
         public string Path { get; } = String.Empty;
         public IAnimeHandler? Next { get; set; }
-        public IQueryable<Anime>? Invoke(IQueryable<Anime> anime, IQueryable<int> animeId)
+        public IEnumerable<Anime>? Invoke(IAnimeRepository context, List<int> animeId)
         {
-            return  from id in animeId
-                     join
-                    a in anime on id equals a.AnimeId
+            DateTime t =DateTime.Now;
+            var ani = from id in animeId
+                join
+                    a in context.Anime on id equals a.AnimeId
                 select new Anime
                 {
                     IdFromAnimeGo = a.IdFromAnimeGo,
@@ -34,6 +35,10 @@
                     MpaaRate = a.MpaaRate,
                     Year = a.Year
                 };
+            ani = ani.ToList();
+            
+            var y = DateTime.Now - t;
+            return ani;
         }
     }
 }

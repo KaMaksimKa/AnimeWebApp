@@ -7,71 +7,123 @@ namespace AnimeWebApp.Controllers
     public class AnimeController : Controller
     {
         private readonly IAnimeRepository _repository;
-        private readonly PagingAnimeHandlersFactory _pagerFactory;
-        private readonly SortingAnimeHandlersFactory _sorterFactory;
+       
         public int PageSize { get; set; } = 10;
         public AnimeController(IAnimeRepository repository)
         {
             _repository = repository;
-            _pagerFactory = new PagingAnimeHandlersFactory();
-            _sorterFactory = new SortingAnimeHandlersFactory();
         }
-        public IActionResult Index(int numberPage, string sort,List<string> filters)
+
+        [Route("api/animes")]
+        public List<Anime>? GetAnimes(int? numberPage, string? sort, List<string>? filters)
+        {
+            var pagingAnimeHandler = new PagingAnimeHandler(numberPage??1, PageSize);
+            var sortingAnimeHandler = new SortingAnimeHandler(sort??"date-add-desc");
+            var filteringAnimeHandler =
+                new FilteringAnimeByGenres
+                {
+                    IncludeData = new List<string> { "Экшен" },
+                    ExcludeData = new List<string> { "Фэнтези" },
+                };
+            var combiningAnimeHandler = new CombiningAnimeHandler(new List<IAnimeHandler>
+            {
+                sortingAnimeHandler,
+                pagingAnimeHandler
+            });
+            return combiningAnimeHandler.Invoke(_repository.Anime)?.ToList();
+        }
+        public IActionResult Filter(int numberPage, string sort,List<string> filters)
         {
 
-            var pagingAnimeHandler = _pagerFactory.GetHandler(numberPage,PageSize);
-            var soringAnimeHandler = _sorterFactory.GetHandler(sort);
-            if ( pagingAnimeHandler is {} && soringAnimeHandler is {})
-            {
-
-                var totalPagesAnimeHandler = new GetingTotalPagesAnimeHandler{Next = pagingAnimeHandler,PageSize = PageSize};
-                soringAnimeHandler.Next = totalPagesAnimeHandler;
-
-                if (soringAnimeHandler?.Invoke(_repository.Anime, _repository.Anime.Select(a => a.AnimeId)) is { } anime)
+            var pagingAnimeHandler = new PagingAnimeHandler(numberPage,PageSize);
+            var sortingAnimeHandler = new SortingAnimeHandler(sort);
+            var countingAnimeHandler = new CountingAnimeHandler();
+            var filteringAnimeHandler =
+                new FilteringAnimeByGenres
                 {
-                    return View(new AnimeIndexViewModel
+                    IncludeData = new List<string>{"Экшен"},
+                    ExcludeData = new List<string>{ "Фэнтези" },
+                };
+
+            var combiningAnimeHandler = new CombiningAnimeHandler(new List<IAnimeHandler>
+            {
+                countingAnimeHandler,
+                sortingAnimeHandler,
+                pagingAnimeHandler
+            });
+            
+            if (combiningAnimeHandler.Invoke(_repository.Anime)?.ToList() is { } anime)
+            {
+                var totalPages = (int)Math.Ceiling((decimal)countingAnimeHandler.NumberOfAnime / PageSize) ;
+                return View(new AnimeIndexViewModel
+                {
+                    Anime = anime,
+                    PagingInfo = new PagingInfo
                     {
-                        Anime = anime,
-                        PagingInfo = new PagingInfo
+                        CurrentPage = numberPage,
+                        PageSize = PageSize,
+                        TotalPages = totalPages,
+                    },
+                    SortingInfo = new SortingInfo
+                    {
+                        CurrentSort = sort,
+                        AllSorts = new Dictionary<string, string>
                         {
-                            CurrentPage = numberPage,
-                            PageSize = PageSize,
-                            TotalPages = totalPagesAnimeHandler.TotalPages
-                        },
-                        SortingInfo = new SortingInfo
-                        {
-                            CurrentSort = sort,
-                            AllSorts = new Dictionary<string, string>
-                            {
-                                ["date-add-desc"] = "Дате добавления",
-                                ["rating-desc"] = "Рейтингу",
-                                ["completed-desc"] = "Уже посмотрели",
-                                ["watching-desc"] = "Смотрят сейчас"
-                            }
+                            ["date-add-desc"] = "Дате добавления",
+                            ["rating-desc"] = "Рейтингу",
+                            ["completed-desc"] = "Уже посмотрели",
+                            ["watching-desc"] = "Смотрят сейчас"
                         }
-                    });
-                }
+                    }
+                });
             }
 
             return NotFound();
         }
 
 
-        [Route("[controller]/[action]/{search}/page/{numberPage}")]
-        [Route("[controller]/[action]/{search}")]
-        public IActionResult Search(string search)
+        public IActionResult Search(string search,int numberPage,string sort)
         {
-            return View("Index", new AnimeIndexViewModel
+            var pagingAnimeHandler = new PagingAnimeHandler(numberPage, PageSize);
+            var sortingAnimeHandler = new SortingAnimeHandler(sort);
+            var countingAnimeHandler = new CountingAnimeHandler();
+            var searchingAnimeHandler = new SearchingAnimeHandler(search);
+
+            var combiningAnimeHandler = new CombiningAnimeHandler(new List<IAnimeHandler>
             {
-                Anime = _repository.Anime.Where(a=>a.NameRu == null || a.NameRu.Contains(search)).Take(10),
-                PagingInfo = new PagingInfo()
-                
+                searchingAnimeHandler,
+                countingAnimeHandler,
+                sortingAnimeHandler,
+                pagingAnimeHandler
             });
+            if (combiningAnimeHandler.Invoke(_repository.Anime)?.ToList() is { } anime)
+            {
+                var totalPages = (int)Math.Ceiling((decimal)countingAnimeHandler.NumberOfAnime / PageSize);
+                return View("Filter", new AnimeIndexViewModel
+                {
+                    Anime = anime,
+                    PagingInfo = new PagingInfo
+                    {
+                        CurrentPage = numberPage,
+                        PageSize = PageSize,
+                        TotalPages = totalPages,
+                    },
+                    SortingInfo = new SortingInfo
+                    {
+                        CurrentSort = sort,
+                        AllSorts = new Dictionary<string, string>
+                        {
+                            ["date-add-desc"] = "Дате добавления",
+                            ["rating-desc"] = "Рейтингу",
+                            ["completed-desc"] = "Уже посмотрели",
+                            ["watching-desc"] = "Смотрят сейчас"
+                        }
+                    }
+                });
+            }
+
+            return NotFound();
         }
-        [HttpPost]
-        public RedirectToActionResult GetSearch(string search)
-        {
-            return RedirectToAction("Search", new {search = search, numberPage =2});
-        }
+        
     }
 }
