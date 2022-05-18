@@ -39,21 +39,21 @@ namespace AnimeWebApp.Infrastructure.TagsHelper
             button.Attributes["aria-expanded"] = "false";
 
             
-            button.InnerHtml.Append(SortingModel.AllSorts[SortingModel.CurrentSort]);
+            button.InnerHtml.Append(SortingModel.AllTypesSorts[SortingModel.CurrentSort]);
             output.Content.AppendHtml(button);
 
             var ul = new TagBuilder("ul");
             ul.Attributes["class"] = "dropdown-menu dropdown-menu-dark dropdown-menu-start dropdown-menu-lg-start";
 
 
-            foreach (var (key,value) in SortingModel.AllSorts)
+            foreach (var key in SortingModel.AllowedTypesSorts)
             {
                 newRouteData.Values["sort"] = key;
                 var li = new TagBuilder("li");
                 var a = new TagBuilder("a");
                 a.Attributes["class"] = "dropdown-item";
                 a.Attributes["href"] = urlHelper.RouteUrl(newRouteData.Values);
-                a.InnerHtml.Append(value);
+                a.InnerHtml.Append(SortingModel.AllTypesSorts[key]);
                 li.InnerHtml.AppendHtml(a);
                 ul.InnerHtml.AppendHtml(li);
             }

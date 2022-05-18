@@ -15,35 +15,15 @@ namespace AnimeWebApp.Models
         {
             get
             {
-                return _context.Anime.Include(a=>a.Voiceovers).Include(a=>a.Genres).AsNoTracking()/*.Select(a=>new Anime()
-                {
-                    AnimeId = a.AnimeId,
-                    Rate = a.Rate,
-                    Completed = a.Completed,
-                    IdFromAnimeGo = a.IdFromAnimeGo,
-                    NameRu = a.NameRu,
-                    Watching = a.Watching,
-                    Voiceovers = a.Voiceovers,
-                    Description = a.Description,
-                    Planned = a.Planned,
-                    Genres = a.Genres,
-                    Dropped = a.Dropped,
-                    OnHold = a.OnHold,
-                    CountEpisode = a.CountEpisode,
-                    Duration = a.Duration,
-                    Href = a.Href,
-                    MpaaRate = a.MpaaRate,
-                    Type = a.Type,
-                    Year = a.Year,
-                    NameEn = a.NameEn,
-                    Status = a.Status,
-                    NextEpisode = a.NextEpisode,
-                    Studio = a.Studio,
-                })*/;
+                return _context.Animes.Include(a => a.Dubbing)
+                    .Include(a => a.Genres).AsNoTracking();
             }
         }
-
-        public IQueryable<Genre> Genre => _context.Genre.Include(g=>g.Anime);
-        public IQueryable<Voiceover> Voiceover => _context.Voiceover.Include(v=>v.Anime);
+        public IQueryable<Genre> Genres => _context.Genres.AsNoTracking();
+        public IQueryable<Dubbing> Dubbing => _context.Dubbing.AsNoTracking();
+        public IQueryable<TypeAnime> TypeAnimes => _context.Types.AsNoTracking();
+        public IQueryable<Status> Statuses => _context.Statuses.AsNoTracking();
+        public IQueryable<MpaaRate> MpaaRates => _context.MpaaRates.AsNoTracking();
+        public IQueryable<Studio> Studios => _context.Studios.AsNoTracking();
     }
 }

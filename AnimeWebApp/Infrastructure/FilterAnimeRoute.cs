@@ -8,7 +8,8 @@ namespace AnimeWebApp.Infrastructure
         public string Controller { get; set; } = "Anime";
         public string Action { get; set; }
         private string? _urlStartWith;
-        public SortAndNumberPage SortAndNumberPage { get; set; } = new SortAndNumberPage();
+        public SortAndNumberPageForRoute SortAndNumberPage { get; set; } = new SortAndNumberPageForRoute();
+        private readonly FilterDataForRoute _filterDataForRoute = new FilterDataForRoute();
         public string UrlStartWith
         {
             get => _urlStartWith ?? $"{Controller}/{Action}".ToLower();
@@ -34,36 +35,42 @@ namespace AnimeWebApp.Infrastructure
                 context.RouteData.Values["numberPage"] = pathPage;
                 context.RouteData.Values["sort"] = pathSort;
 
-
-                /*pathList = path?.Split("filters").Select(s => s.Trim('/')).ToList();
-                string pathFilter;
-                if (pathList?.Count() == 1)
+                var genres = _filterDataForRoute.GetDataFromContex("genres", context);
+                for (int i = 0; i < genres.Count; i++)
                 {
-                    pathFilter = DefaultFilter;
+                    context.RouteData.Values[$"genres[{i}]"] = genres[i];
                 }
-                else if (pathList?.Count() == 2)
+                var dubbing = _filterDataForRoute.GetDataFromContex("dubbing", context);
+                for (int i = 0; i < dubbing.Count; i++)
                 {
-                    pathFilter = pathList[1];
-                    path = pathList[0];
+                    context.RouteData.Values[$"dubbing[{i}]"] = dubbing[i];
                 }
-                else
+                var types = _filterDataForRoute.GetDataFromContex("types", context);
+                for (int i = 0; i < types.Count; i++)
                 {
-                    return;
+                    context.RouteData.Values[$"types[{i}]"] = types[i];
                 }
-                var filters = pathFilter.Split("/");
-                for (int i = 0; i < filters.Length ; i ++)
-                {
-                    context.RouteData.Values[$"filters[{i}]"] = filters[i];
-                }*/
 
                 context.RouteData.Routers.Add(_mvcRouter);
                 context.RouteData.Values["controller"] = Controller;
                 context.RouteData.Values["action"] = Action;
 
+                var p = GetVirtualPath(new VirtualPathContext(context.HttpContext, context.RouteData.Values, context.RouteData.Values));
 
-                await _mvcRouter.RouteAsync(context);
+                if (context.HttpContext.Request.Path.Value == p?.VirtualPath)
+                {
+                    await _mvcRouter.RouteAsync(context);
+                }
+                else
+                {
+                    context.Handler = async c => c.Response.Redirect(p.VirtualPath);
+                }
+
+
+
+                
             }
-
+            
         }
 
         public VirtualPathData? GetVirtualPath(VirtualPathContext context)
@@ -73,48 +80,15 @@ namespace AnimeWebApp.Infrastructure
             {
                 string path = $"/{UrlStartWith}";
                 string query = String.Empty;
-                string? valueSort = null;
-                string? valueNumberPage = null;
+                var pathGenres = _filterDataForRoute.GetPathFromContext("genres", context);
+                path += pathGenres;
+                var pathDubbing = _filterDataForRoute.GetPathFromContext("dubbing", context);
+                path += pathDubbing;
+                var pathTypes = _filterDataForRoute.GetPathFromContext("types", context);
+                path += pathTypes;
 
-                foreach (var (key,value) in context.Values)
-                {
-                    if (key == "numberPage")
-                    {
-                        valueNumberPage = value?.ToString();
-                    }
-                    else if (key == "sort")
-                    {
-                        valueSort = value?.ToString();
-                    }
-                    else
-                    {
-                        if (key != "controller" && key != "action" && key != "area" && key != "page")
-                        {
-                            if (query != String.Empty)
-                            {
-                                query += "&";
-                            }
-                            query += $"{key}={value?.ToString()?.Replace(" ", "+")}";
-                        }
-                    }
-                    
-                }
-
-                string pathSortAndNumberPage = SortAndNumberPage.GetPath(valueSort, valueNumberPage);
+                string pathSortAndNumberPage = SortAndNumberPage.GetPathFromContext(context);
                 path += pathSortAndNumberPage;
-
-
-                /*var filters = new List<object>();
-                var i = 0;
-                while (context.Values[$"filters[{i}]"] is {} value)
-                {
-                    filters.Add(value);
-                    i++;
-                }
-
-                var pathFilters = string.Join('/', filters);
-                url += pathFilters != $"{DefaultFilter}" && pathFilters!=String.Empty ? $"/filters/{pathFilters}" : "";
-*/
 
                 var url = query != String.Empty ? path + "?" + query : path;
                 return new VirtualPathData(this, url);

@@ -25,13 +25,13 @@ app.UseStaticFiles();
 {
     routeBuilder.Routes.Add(new FilterAnimeRoute(routeBuilder.DefaultHandler!)
     {
-        SortAndNumberPage = new SortAndNumberPage{DefaultSort = "date-add-desc"},
+        SortAndNumberPage = new SortAndNumberPageForRoute{DefaultSort = "date-add-desc"},
         Controller = "Anime",
         Action = "Filter"
     });
     routeBuilder.Routes.Add(new SearchAnimeRoute(routeBuilder.DefaultHandler!)
     {
-        SortAndNumberPage = new SortAndNumberPage { DefaultSort = "date-add-desc" },
+        SortAndNumberPage = new SortAndNumberPageForRoute { DefaultSort = "date-add-desc" },
         Controller = "Anime",
         Action = "Search",
     });

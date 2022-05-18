@@ -10,7 +10,7 @@
         }
         public IQueryable<Anime>? Invoke(IQueryable<Anime>? animes)
         {
-            animes = animes?.Where(a => a.NameRu == null || a.NameRu.ToLower().Contains(_search));
+            animes = animes?.Where(a => a.TitleRu == null || a.TitleRu.ToLower().Contains(_search));
             return Next?.Invoke(animes);
         }
     }

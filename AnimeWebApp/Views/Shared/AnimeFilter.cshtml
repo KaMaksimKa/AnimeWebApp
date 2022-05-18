@@ -1,0 +1,84 @@
+﻿@model FilteringInfo
+
+<h3 class="text-center">Фильтр</h3>
+<form asp-action="Filter" asp-controller="Anime" method="get">
+	<div class="row">
+		<div class="btn-group">
+			<button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+				Жанры
+			</button>
+			<ul class="dropdown-menu" aria-labelledby="dropdownMenuClickableInside">
+				@foreach (var genre in Model.AllGenres)
+				{
+					@if (Model.CurrentGenres.Contains(genre))
+					{
+						<li><div class="dropdown-item text-end">
+							<input type="checkbox" checked="checked" name="genres" value=@genre.FriendlyUrl />@genre.Title
+						</div></li>
+					}
+					else
+					{
+						<li><div class="dropdown-item text-end">
+							<input type="checkbox" name="genres" value=@genre.FriendlyUrl />@genre.Title
+						</div></li>
+					}
+					
+				}
+			</ul>
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="btn-group">
+			<button class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+				Озвучка
+			</button>
+			<ul class="dropdown-menu" aria-labelledby="dropdownMenuClickableInside">
+				@foreach (var dubbing in Model.AllDubbing)
+				{
+					@if (Model.CurrentDubbing.Contains(dubbing))
+					{
+						<li><div class="dropdown-item text-end">
+							<input type="checkbox" checked="checked" name="dubbing" value=@dubbing.FriendlyUrl />@dubbing.Title
+						</div></li>
+					}
+					else
+					{
+						<li><div class="dropdown-item text-end">
+							<input type="checkbox" name="dubbing" value=@dubbing.FriendlyUrl />@dubbing.Title
+						</div></li>
+					}
+					
+				}
+			</ul>
+		</div>
+	</div>
+	<div class="row mt-1">
+		<div class="btn-group">
+			<button class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+				Тип
+			</button>
+			<ul class="dropdown-menu" aria-labelledby="dropdownMenuClickableInside">
+				@foreach (var type in Model.AllTypes)
+				{
+					@if (Model.CurrentTypes.Contains(type))
+					{
+						<li><div class="dropdown-item text-end">
+							<input type="checkbox" checked="checked" name="types" value=@type.FriendlyUrl />@type.Title
+						</div></li>
+					}
+					else
+					{
+						<li><div class="dropdown-item text-end">
+							<input type="checkbox" name="types" value=@type.FriendlyUrl />@type.Title
+						</div></li>
+					}
+					
+				}
+			</ul>
+		</div>
+	</div>
+	<div class="row mt-3">
+		<button type="submit" class="btn btn-primary">Отфильтровать</button>
+	</div>
+</form>
+

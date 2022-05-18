@@ -6,7 +6,7 @@
         public string Controller { get; set; }
         public string Action { get; set; }
         private string? _urlStartWith;
-        public SortAndNumberPage SortAndNumberPage { get; set; } = new SortAndNumberPage();
+        public SortAndNumberPageForRoute SortAndNumberPage { get; set; } = new SortAndNumberPageForRoute();
         public string UrlStartWith
         {
             get => _urlStartWith ?? $"{Controller}/{Action}".ToLower();
@@ -47,38 +47,12 @@
                 context.Values["action"]?.ToString() == Action)
             {
                 string path = $"/{UrlStartWith}";
-                string query = String.Empty;
-                string? valueSort = null;
-                string? valueNumberPage = null;
+                string? query = "search="+context.Values["search"]?.ToString()?.Replace(" ","+");
 
-                foreach (var (key, value) in context.Values)
-                {
-                    if (key == "numberPage")
-                    {
-                        valueNumberPage = value?.ToString();
-                    }
-                    else if (key == "sort")
-                    {
-                        valueSort = value?.ToString();
-                    }
-                    else
-                    {
-                        if (key != "controller" && key != "action" && key != "area" && key != "page")
-                        {
-                            if (query != String.Empty)
-                            {
-                                query += "&";
-                            }
-                            query += $"{key}={value?.ToString()?.Replace(" ","+")}";
-                        }
-                    }
-
-                }
-
-                string pathSortAndNumberPage = SortAndNumberPage.GetPath(valueSort, valueNumberPage);
+                string pathSortAndNumberPage = SortAndNumberPage.GetPathFromContext(context);
                 path += pathSortAndNumberPage;
 
-                var url = query != String.Empty ? path + "?" + query : path;
+                var url = query != null ? path + "?" + query : path;
                 return new VirtualPathData(this, url);
             }
 

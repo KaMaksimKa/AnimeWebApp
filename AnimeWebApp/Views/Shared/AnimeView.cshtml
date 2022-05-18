@@ -9,13 +9,13 @@
 			</div>
 			<div class="col-7">
 				<div>
-					<h5>@Model.NameRu</h5>
+					<h5>@Model.TitleRu</h5>
 				</div>
 				<div>
-					<u>Жанры:</u> @String.Join(", ", Model.Genres.Select(g => g.NameRu))
+					<u>Жанры:</u> @String.Join(", ", Model.Genres.Select(g => g.Title))
 				</div>
 				<div>
-					<u>Озвучка:</u> @String.Join(", ", Model.Voiceovers.Select(v => v.NameRu).Take(4))
+					<u>Озвучка:</u> @String.Join(", ", Model.Dubbing.Select(v => v.Title).Take(4))
 				</div>
 				
 				<p class="text-break mt-2">@Model.Description</p>
