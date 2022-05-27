@@ -1,12 +1,14 @@
-﻿
+﻿@model HeaderViewModel
+
 <div class="container">
 	<div class="row">
-		<div class="col-9">
-			<a asp-controller="Anime" asp-action="Filter")>Аниме</a>
+		<div class="col-8">
+			<a class="btn btn-primary" asp-controller="Anime" asp-action="Filter")>Аниме</a>
+			<a class="btn btn-info ms-3" asp-action="UpdateMainDataAllAnime" asp-controller="Parser">Обновить иммеющиеся аниме</a>
+			<a class="btn btn-info ms-3" asp-action="AddNewFullAnime" asp-controller="Parser">Добавить новые аниме</a>
 		</div>
 		<div class="col-3">
 			<form asp-controller="Anime" asp-action="Search" asp-route-numberPage="1" method="get">
-			@*<form action=@Url.Action("Search","Anime",new{numberPage = 1},null) method="get">*@
 				<div class="row justify-content-end">
 					<div class="col-8">
 						<input type="text" name="search" class="form-control"/>
@@ -16,6 +18,16 @@
 					</div>
 				</div>
 			</form>
+		</div>
+		<div class="col-1">
+		@if (Model.UserIsIsAuthenticated!=true)
+		{
+			<a class="btn btn-outline-info" asp-controller="Account" asp-action="Login" asp-route-returnUrl=@Context.Request.Path.Value>Войти</a>
+		}
+		else
+		{
+			<a asp-controller="Account" asp-action="Logout" class="text-secondary">Выйти</a>
+		}
 		</div>
 	</div>
 </div>

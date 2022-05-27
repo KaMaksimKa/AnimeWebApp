@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using AnimeWebApp.Infrastructure;
 using AnimeWebApp.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,17 +10,28 @@ builder.Services.AddMvc(options =>options.EnableEndpointRouting=false ).AddNewto
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 
-builder.Services.AddDbContext<ApplicationContext>(/*optionsBuilder =>
+builder.Services.AddDbContext<ApplicationContext>(optionsBuilder =>
 {
-    optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-}*/);
+    optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddTransient<IAnimeRepository, EfAnimeRepository>();
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+    {
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 6;
+        options.User.RequireUniqueEmail = true;
+    }).AddEntityFrameworkStores<ApplicationContext>()
+    .AddDefaultTokenProviders();
 var app = builder.Build();
 
 app.UseStatusCodePages();
 app.UseDeveloperExceptionPage();
-app.UseStaticFiles(); 
+app.UseStaticFiles();
+app.UseAuthentication();
 
  app.UseMvc(routeBuilder =>
 {
@@ -40,6 +52,8 @@ app.UseStaticFiles();
         template: "{controller=Home}/{action=Index}/{id?}"
         );
     
-} );
+});
+
+ApplicationContext.CreateAdminAccount(app.Services, app.Configuration).Wait();
 
 app.Run();

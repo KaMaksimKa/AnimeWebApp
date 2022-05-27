@@ -1,0 +1,17 @@
+﻿@model LoginModel 
+
+<div class="offset-md-4 col-4 mt-5">
+	<div class="text-danger" asp-validation-summary="All"></div>
+	<form asp-action="Login" method="post" asp-route-returnUrl=@ViewBag.returnUrl>
+		<div>
+			<label asp-for="Email">Электронная почта</label>
+			<input asp-for="Email" class="form-control" aria-describedby="emailHelp" placeholder="Введите Email">
+		</div>
+		<div class="">
+			<label asp-for="Password">Пароль</label>
+			<input asp-for="Password" class="form-control" placeholder="Введите пароль">
+		</div>
+		<button type="submit" class="btn btn-primary mt-1">Войти</button>
+	</form>
+	<a class="text-secondary mt-1" asp-controller="Account" asp-action="Register">Зарегистрироваться</a>
+</div>

@@ -1,10 +1,17 @@
 ﻿
+using AnimeWebApp.Models;
+
 namespace AnimeWebApp.Infrastructure
 {
     public class FilterAnimeRoute:IRouter
     {
         private IRouter _mvcRouter;
-        public string DefaultFilter { get; set; } = "all";
+        private List<string> AllFilters = new List<string>
+        {
+            nameof(FilteringData.Dubbing),
+            nameof(FilteringData.Genres),
+            nameof(FilteringData.Types)
+        };
         public string Controller { get; set; } = "Anime";
         public string Action { get; set; }
         private string? _urlStartWith;
@@ -19,6 +26,7 @@ namespace AnimeWebApp.Infrastructure
         public FilterAnimeRoute(IRouter mvcRouter)
         {
             _mvcRouter = mvcRouter;
+            AllFilters = AllFilters.Select(s => s.ToLower()).ToList();
         }
         public async Task RouteAsync(RouteContext context)
         {
@@ -35,21 +43,16 @@ namespace AnimeWebApp.Infrastructure
                 context.RouteData.Values["numberPage"] = pathPage;
                 context.RouteData.Values["sort"] = pathSort;
 
-                var genres = _filterDataForRoute.GetDataFromContex("genres", context);
-                for (int i = 0; i < genres.Count; i++)
+
+                foreach (var filter in AllFilters)
                 {
-                    context.RouteData.Values[$"genres[{i}]"] = genres[i];
+                    var filterList = _filterDataForRoute.GetDataFromContex(filter, context);
+                    for (int i = 0; i < filterList.Count; i++)
+                    {
+                        context.RouteData.Values[$"{filter}[{i}]"] = filterList[i];
+                    }
                 }
-                var dubbing = _filterDataForRoute.GetDataFromContex("dubbing", context);
-                for (int i = 0; i < dubbing.Count; i++)
-                {
-                    context.RouteData.Values[$"dubbing[{i}]"] = dubbing[i];
-                }
-                var types = _filterDataForRoute.GetDataFromContex("types", context);
-                for (int i = 0; i < types.Count; i++)
-                {
-                    context.RouteData.Values[$"types[{i}]"] = types[i];
-                }
+
 
                 context.RouteData.Routers.Add(_mvcRouter);
                 context.RouteData.Values["controller"] = Controller;
@@ -80,12 +83,13 @@ namespace AnimeWebApp.Infrastructure
             {
                 string path = $"/{UrlStartWith}";
                 string query = String.Empty;
-                var pathGenres = _filterDataForRoute.GetPathFromContext("genres", context);
-                path += pathGenres;
-                var pathDubbing = _filterDataForRoute.GetPathFromContext("dubbing", context);
-                path += pathDubbing;
-                var pathTypes = _filterDataForRoute.GetPathFromContext("types", context);
-                path += pathTypes;
+
+
+                foreach (var filter in AllFilters)
+                {
+                    var filterPath = _filterDataForRoute.GetPathFromContext(filter, context);
+                    path += filterPath;
+                }
 
                 string pathSortAndNumberPage = SortAndNumberPage.GetPathFromContext(context);
                 path += pathSortAndNumberPage;

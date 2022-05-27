@@ -1,0 +1,25 @@
+﻿@model RegisterModel 
+
+<div class="offset-md-4 col-4 mt-5">
+	<div class="text-danger" asp-validation-summary="All"></div>
+	<form asp-action="Register" method="post">
+		<div>
+			<label asp-for="Name">Имя пользователя</label>
+			<input asp-for="Name" class="form-control" placeholder="Введите имя">
+		</div>
+		<div>
+			<label asp-for="Email">Электронная почта</label>
+			<input asp-for="Email" class="form-control" aria-describedby="emailHelp" placeholder="Введите Email">
+		</div>
+		<div>
+			<label asp-for="Password">Пароль</label>
+			<input asp-for="Password" class="form-control" placeholder="Введите пароль">
+		</div>
+		<div>
+			<label asp-for="PasswordConfirm">Подтвердите пароль</label>
+			<input asp-for="PasswordConfirm" class="form-control" placeholder="Введите пароль еще раз">
+		</div>
+		<button type="submit" class="btn btn-primary mt-1">Зарегистриоваться</button>
+	</form>
+	<a class="text-secondary mt-1" asp-controller="Account" asp-action="Login">Войти</a>
+</div>
