@@ -1,0 +1,27 @@
+﻿@model DropdownsFilerAnimeViewModel
+
+<div class="row mt-1">
+		<div class="btn-group">
+			<button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+				@Model.Title
+			</button>
+			<ul class="dropdown-menu" aria-labelledby="dropdownMenuClickableInside">
+				@foreach (var item in Model.AllowedItems)
+				{
+					@if (Model.SelectedItems.Contains(item))
+					{
+						<li><div class="dropdown-item text-end">
+							<input type="checkbox" checked="checked" name=@Model.FriendlyUrl value=@item.FriendlyUrl />@item.Title
+						</div></li>
+					}
+					else
+					{
+						<li><div class="dropdown-item text-end">
+							<input type="checkbox" name=@Model.FriendlyUrl value=@item.FriendlyUrl />@item.Title
+						</div></li>
+					}
+					
+				}
+			</ul>
+		</div>
+	</div>

@@ -1,6 +1,6 @@
 ﻿namespace AnimeWebApp.Models
 {
-    public class Status
+    public class Status: IHavingTitleAndFriendlyUrl
     {
         public int StatusId { get; set; }
         public string Title { get; set; }

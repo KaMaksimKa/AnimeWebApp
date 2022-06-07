@@ -9,5 +9,9 @@
         public IQueryable<Status> Statuses { get; }
         public IQueryable<MpaaRate> MpaaRates { get; }
         public IQueryable<Studio> Studios { get; }
+        public Task SaveChangesAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 }

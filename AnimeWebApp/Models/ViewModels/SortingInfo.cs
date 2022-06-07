@@ -13,6 +13,8 @@
             ["completed"] = "Уже посмотрели △",
             ["watching-desc"] = "Смотрят сейчас ▽",
             ["watching"] = "Смотрят сейчас △",
+            ["planned-desc"] = "Планируют смотреть ▽",
+            ["planned"] = "Планируют смотреть △",
         };
 
         public List<string> AllowedTypesSorts { get; set; } = new List<string>();

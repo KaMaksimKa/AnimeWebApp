@@ -1,0 +1,15 @@
+﻿@model ChangeFriendlyUrlViewModel
+<div class="row">
+	<div class="col-auto">
+		<form asp-action="ChangeFriendlyUrl" method="post">
+			<table class="table table-striped mt-5">
+				@foreach (var (key,value) in Model.Attributes){
+					<tr><td>@key</td><td><input type="text" asp-for=@Model.Attributes[key] value=@value></input></td></tr>
+				}
+			</table>
+			<button class="btn btn-primary m-3" type="submit">Изменить</button>
+		</form>
+	</div>
+</div>
+
+

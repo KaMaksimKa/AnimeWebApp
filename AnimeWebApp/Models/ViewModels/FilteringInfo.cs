@@ -9,6 +9,8 @@
         public List<Dubbing> CurrentDubbing => AllDubbing.Where(d => _filteringData.Dubbing.Contains(d.FriendlyUrl)).ToList();
         public List<TypeAnime> AllTypes { get; init; } = new List<TypeAnime>();
         public List<TypeAnime> CurrentTypes => AllTypes.Where(t => _filteringData.Types.Contains(t.FriendlyUrl)).ToList();
+        public List<Status> AllStatuses { get; init; } = new List<Status>();
+        public List<Status> CurrentStatuses => AllStatuses.Where(s => _filteringData.Statuses.Contains(s.FriendlyUrl)).ToList();
 
         public FilteringInfo(FilteringData filteringData)
         {

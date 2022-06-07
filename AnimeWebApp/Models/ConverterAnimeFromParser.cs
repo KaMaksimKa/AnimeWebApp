@@ -26,7 +26,8 @@ namespace AnimeWebApp.Models
                 Dubbing = animeFromParser.Dubbing.Select(d => new Dubbing() { Title = d }).ToList(),
                 OnHold = animeFromParser.OnHold,
                 Year = animeFromParser.Year,
-                Watching = animeFromParser.Watching
+                Watching = animeFromParser.Watching,
+                Planned = animeFromParser.Planned
             };
         }
 

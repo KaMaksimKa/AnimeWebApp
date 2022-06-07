@@ -41,7 +41,6 @@ namespace AnimeWebApp.Models
             int i = 0;
             foreach (var anime in animeList)
             {
-                Console.WriteLine(++i+" - Аниме");
                 await UpdateAllDataAnime(anime);
             }
             return animeList;
@@ -64,7 +63,8 @@ namespace AnimeWebApp.Models
             {
                 try
                 {
-                    page = await GetDocumentFromHtmlAsync(url + $"&page={numberPage}");
+                    string newUrl = url + $"&page={numberPage}";
+                    page = await GetDocumentFromHtmlAsync(newUrl);
 
                     foreach (var e in page.QuerySelectorAll(".animes-list-item"))
                     {
@@ -93,13 +93,9 @@ namespace AnimeWebApp.Models
                 {
                     page?.Close();
                 }
-
-                Console.WriteLine(numberPage);
-                Console.WriteLine(page.StatusCode);
                 numberPage++;
             } while (page.StatusCode != HttpStatusCode.NotFound);
 
-            Console.WriteLine(animeList.Count);
             return animeList;
         }
         public async Task<AnimeFromParser> GetMainDataAnimeAsync(string? hrefAnime, int idFromAnimeGo)

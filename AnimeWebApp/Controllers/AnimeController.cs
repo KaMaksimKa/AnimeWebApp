@@ -52,13 +52,39 @@ namespace AnimeWebApp.Controllers
                         TotalPages = totalPages,
                     },
                     SortingInfo = new SortingInfo(sort),
-                    FilteringInfo = new FilteringInfo(filteringData)
+                    FilteringInfo = new List<DropdownsFilerAnimeViewModel>
                     {
-                        AllGenres = _repository.Genres.Where(g=>g.FriendlyUrl!=String.Empty).OrderBy(g=>g.Title).ToList(),
-                        AllDubbing = _repository.Dubbing.Where(d => d.FriendlyUrl != String.Empty).OrderByDescending(d=>d.Animes.Count).ToList(),
-                        AllTypes = _repository.TypeAnimes.Where(t => t.FriendlyUrl != String.Empty).OrderByDescending(t => t.Title).ToList(),
+                        new DropdownsFilerAnimeViewModel(filteringData.Genres)
+                        {
+                            Title = "Жанры",
+                            FriendlyUrl = nameof(filteringData.Genres),
+                            AllowedItems = _repository.Genres.Where(g => g.FriendlyUrl != String.Empty)
+                            .OrderBy(g => g.Title).OfType<IHavingTitleAndFriendlyUrl>().ToList()
+                        },
+                         new DropdownsFilerAnimeViewModel(filteringData.Dubbing)
+                        {
+                            Title = "Озвучка",
+                            FriendlyUrl = nameof(filteringData.Dubbing),
+                            AllowedItems = _repository.Dubbing.Where(d => d.FriendlyUrl != String.Empty)
+                            .OrderBy(d => d.Title).OfType<IHavingTitleAndFriendlyUrl>().ToList()
+                        },
+                         new DropdownsFilerAnimeViewModel(filteringData.Statuses)
+                        {
+                            Title = "Статус",
+                            FriendlyUrl = nameof(filteringData.Statuses),
+                            AllowedItems = _repository.Statuses.Where(s => s.FriendlyUrl != String.Empty)
+                            .OrderBy(s => s.Title).OfType<IHavingTitleAndFriendlyUrl>().ToList()
+                        },
+                         new DropdownsFilerAnimeViewModel(filteringData.Types)
+                        {
+                            Title = "Тип",
+                            FriendlyUrl = nameof(filteringData.Types),
+                            AllowedItems = _repository.TypeAnimes.Where(t => t.FriendlyUrl != String.Empty)
+                            .OrderBy(t => t.Title).OfType<IHavingTitleAndFriendlyUrl>().ToList()
+                        },
+
                     }
-                });
+                }); ;
             }
 
             return NotFound();

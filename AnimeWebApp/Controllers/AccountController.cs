@@ -92,5 +92,18 @@ namespace AnimeWebApp.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [Authorize]
+        public IActionResult Index()
+        {
+            if (User.IsInRole("Admins"))
+            {
+                return View("AdminsIndex");
+            }
+            else
+            {
+                return View();
+            }
+        }
+
     }
 }

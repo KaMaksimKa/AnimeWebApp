@@ -48,6 +48,11 @@ app.UseAuthentication();
         Action = "Search",
     });
     routeBuilder.MapRoute(
+        name:null,
+        template: "manageranime/changefriendlyurl/{animeAttribute}",
+        defaults: new { controller  = "ManagerAnime",action = "ChangeFriendlyUrl" }
+        );
+    routeBuilder.MapRoute(
         name: "default",
         template: "{controller=Home}/{action=Index}/{id?}"
         );

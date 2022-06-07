@@ -1,0 +1,24 @@
+﻿<h2 class="text-center">Управление аниме</h2>
+<div class="row">
+	<div class="col-auto m-2">
+		<a class="btn btn-info" asp-controller="ManagerAnime" asp-action="AddNewFullAnime">Добавить новые аниме</a>
+	</div>
+	<div class="col-auto m-2">
+		<a class="btn btn-info" asp-controller="ManagerAnime" asp-action="UpdateDataAllAnime">Обновить информации о аниме</a>
+	</div>
+	<div class="col-auto m-2">
+		<a class="btn btn-info" asp-controller="ManagerAnime" asp-action="UpdatePhotosAnime">Обновить фото у аниме</a>
+	</div>
+	<div class="col-auto m-2">
+		<a class="btn btn-info" asp-action="ChangeFriendlyUrl" asp-route-animeAttribute=@AnimeAttributes.Genres>Изменить url у жанров</a>
+	</div>
+	<div class="col-auto m-2">
+		<a class="btn btn-info" asp-action="ChangeFriendlyUrl" asp-route-animeAttribute=@AnimeAttributes.Dubbing>Изменить url у озвучки</a>
+	</div>
+	<div class="col-auto m-2">
+		<a class="btn btn-info" asp-action="ChangeFriendlyUrl" asp-route-animeAttribute=@AnimeAttributes.Types>Изменить url у типов</a>
+	</div>
+	<div class="col-auto m-2">
+		<a class="btn btn-info" asp-action="ChangeFriendlyUrl" asp-route-animeAttribute=@AnimeAttributes.Statuses>Изменить url у статусов</a>
+	</div>
+</div>

@@ -18,6 +18,7 @@
                 "date-add" => animes?.OrderBy(a => a.IdFromAnimeGo??0),
                 "completed" => animes?.OrderBy(a => a.Completed??0),
                 "watching" => animes?.OrderBy(a => a.Watching??0),
+                "planned" => animes?.OrderBy(a=>a.Planned??0),
                 _ => null
             };
             if (TypeSort.Contains("-desc"))

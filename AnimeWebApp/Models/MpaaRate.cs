@@ -1,6 +1,6 @@
 ﻿namespace AnimeWebApp.Models
 {
-    public class MpaaRate
+    public class MpaaRate: IHavingTitleAndFriendlyUrl
     {
         public int MpaaRateId { get; set; }
         public string Title { get; set; }

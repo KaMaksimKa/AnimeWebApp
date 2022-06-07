@@ -10,7 +10,11 @@ namespace AnimeWebApp.Components
         [Authorize]
         public ViewViewComponentResult Invoke()
         {
-            return View(new HeaderViewModel(){UserIsIsAuthenticated = User.Identity?.IsAuthenticated });
+            return View(new HeaderViewModel()
+            {
+                UserIsIsAuthenticated = User.Identity?.IsAuthenticated,
+                UserIsAdmin = User.IsInRole("Admins")
+            });
         }
     }
 }

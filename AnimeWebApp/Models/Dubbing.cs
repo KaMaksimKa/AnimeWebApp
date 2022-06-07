@@ -1,6 +1,6 @@
 ﻿namespace AnimeWebApp.Models
 {
-    public class Dubbing
+    public class Dubbing: IHavingTitleAndFriendlyUrl
     {
         public int DubbingId { get; set; }
         public string Title { get; set; }

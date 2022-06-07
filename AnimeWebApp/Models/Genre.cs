@@ -1,6 +1,6 @@
 ﻿namespace AnimeWebApp.Models
 {
-    public class Genre
+    public class Genre:IHavingTitleAndFriendlyUrl
     {
         public int GenreId { get; set; }
         public string Title { get; set; }
