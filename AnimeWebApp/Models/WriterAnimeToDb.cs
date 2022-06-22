@@ -148,11 +148,6 @@ namespace AnimeWebApp.Models
                 anime.Duration = upAnime.Duration != null || isUpdatingNull ? upAnime.Duration : anime.Duration;
             }
             _context.AddRange(addingAnime);
-
-
-           /* animes = PrepareAnimes(animes);
-            _context.RemoveRange(_context.Animes.Where(a => (animes.Select(an => an.IdFromAnimeGo)).Contains(a.IdFromAnimeGo)));
-            _context.AddRange(animes);*/
             _context.SaveChanges();
         }
 

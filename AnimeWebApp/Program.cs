@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMvc(options =>options.EnableEndpointRouting=false ).AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
+builder.Services.AddSingleton<ParserAnimeGo>();
 
 builder.Services.AddDbContext<ApplicationContext>(optionsBuilder =>
 {

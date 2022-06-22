@@ -10,10 +10,26 @@ namespace AnimeWebApp.Controllers
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IAnimeRepository _repository;
-        public ManagerAnimeController(IAnimeRepository repository, IServiceScopeFactory serviceScopeFactory)
+        private readonly ParserAnimeGo _parser;
+        public ManagerAnimeController(IAnimeRepository repository, IServiceScopeFactory serviceScopeFactory,ParserAnimeGo parser)
         {
             _repository = repository;
             _serviceScopeFactory = serviceScopeFactory;
+            _parser = parser;
+
+        }
+
+        public IActionResult CheckInfoParser()
+        {
+            return View(new ParserInfoViewModel()
+            {
+                Description = _parser.Description,
+                Done = _parser.Done,
+                NeedToDo = _parser.NeedToDo,
+                CurrentParsingUrl = _parser.CurrentParsingUrl,
+                IsCookiesGood = _parser.IsCookiesGood
+                
+            });
         }
         public IActionResult AddNewFullAnime()
         {
@@ -26,61 +42,22 @@ namespace AnimeWebApp.Controllers
                 
                 if (context != null)
                 {
-                    using var parser = new ParserAnimeGo();
                     using var writer = new WriterAnimeToDb(context);
-                    var animeFromParser = await parser.GetPartialAnimeFromDefaultUrlAsync();
+                    var animeFromParser = await _parser.GetPartialAnimeFromDefaultUrlAsync();
                     animeFromParser = animeFromParser.Where(a => !idsFromAnimego.Contains(a.IdFromAnimeGo)).ToList();
-                    var step = 10;
-                    var i = 0;
-                    while (animeFromParser.Skip(i * step).Take(step).Any())
+                    
+                    foreach (var anime in animeFromParser)
                     {
-                        var fullAnimeFromAnimego = animeFromParser.Skip(i * step).Take(step).ToList();
-                        foreach (var anime in fullAnimeFromAnimego)
-                        {
-                            await parser.UpdateAllDataAnime(anime);
-                        }
-
-                        var fullAnime = ConverterAnimeFromParser.ToAnime(fullAnimeFromAnimego);
-                        writer.AddAnimeRange(fullAnime);
-                        foreach (var anime in fullAnime)
-                        {
-                            if (env != null)
-                            {
-                                var path = Path.Combine(env.WebRootPath, "img/anime", anime.IdFromAnimeGo + ".jpg");
-                                var stream = await parser.GetSteamPhotoFromAnimeHref(anime.Href);
-                                if (stream != null)
-                                {
-                                    (new SaverPhoto()).SaveFhotoFromStream(stream, path);
-                                }
-                            }
-                        }
-                        i++;
+                        await _parser.UpdateAllDataAnime(anime);
                     }
-                }
-            });
-            return RedirectToAction(nameof(Index));
-        }
-        public IActionResult UpdatePhotosAnime()
-        {
-            _ = Task.Run(async () =>
-            {
-                using var scope = _serviceScopeFactory.CreateScope();
-                using var contex = scope.ServiceProvider.GetService<ApplicationContext>();
-                var env = scope.ServiceProvider.GetService<IWebHostEnvironment>();
-                if (contex != null && env != null)
-                {
-                    using var parser = new ParserAnimeGo();
-                    var anime = contex.Animes.Where(a => a.IdFromAnimeGo > 2030).Select(an => new { an.IdFromAnimeGo, an.Href }).ToList();
-                    foreach (var a in contex.Animes.Select(an => new { an.IdFromAnimeGo,an.Href }))
+                    var fullAnime = ConverterAnimeFromParser.ToAnime(animeFromParser);
+                    writer.AddAnimeRange(fullAnime);
+                    foreach (var anime in fullAnime)
                     {
                         if (env != null)
                         {
-                            if (a.IdFromAnimeGo > 2030)
-                            {
-
-                            }
-                            var path = Path.Combine(env.WebRootPath, "img/anime", a.IdFromAnimeGo + ".jpg");
-                            var stream = await parser.GetSteamPhotoFromAnimeHref(a.Href);
+                            var path = Path.Combine(env.WebRootPath, "img/anime", anime.IdFromAnimeGo + ".jpg");
+                            var stream = await _parser.GetSteamPhotoFromAnimeHref(anime.Href);
                             if (stream != null)
                             {
                                 (new SaverPhoto()).SaveFhotoFromStream(stream, path);
@@ -89,7 +66,32 @@ namespace AnimeWebApp.Controllers
                     }
                 }
             });
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(CheckInfoParser));
+        }
+        public IActionResult UpdatePhotosAnime()
+        {
+            Task.Run(async () =>
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                using var contex = scope.ServiceProvider.GetService<ApplicationContext>();
+                var env = scope.ServiceProvider.GetService<IWebHostEnvironment>();
+                if (contex != null && env != null)
+                {
+                    foreach (var a in contex.Animes.Select(an => new { an.IdFromAnimeGo,an.Href }))
+                    {
+                        if (env != null)
+                        {
+                            var path = Path.Combine(env.WebRootPath, "img/anime", a.IdFromAnimeGo + ".jpg");
+                            var stream = await _parser.GetSteamPhotoFromAnimeHref(a.Href);
+                            if (stream != null)
+                            {
+                                (new SaverPhoto()).SaveFhotoFromStream(stream, path);
+                            }
+                        }
+                    }
+                }
+            });
+            return RedirectToAction(nameof(CheckInfoParser));
         }
         public IActionResult UpdateDataAllAnime()
         {
@@ -101,18 +103,16 @@ namespace AnimeWebApp.Controllers
                 var env = scope.ServiceProvider.GetService<IWebHostEnvironment>();
                 if (context != null)
                 {
-                    using var parser = new ParserAnimeGo();
                     using var writer = new WriterAnimeToDb(context);
 
-                    var animeFromParser = await parser.GetFullAnimeFromDefaultUrlAsync();
+                    var animeFromParser = await _parser.GetFullAnimeFromDefaultUrlAsync();
 
                     var anime = ConverterAnimeFromParser.ToAnime(animeFromParser.Where(a => idsFromAnimego.Contains(a.IdFromAnimeGo)));
                     writer.AddOrUpDateAnimeRange(anime);
                 }
             });
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(CheckInfoParser));
         }
-
         private IQueryable<IHavingTitleAndFriendlyUrl> GetAnimeAttributes(AnimeAttributes animeAttribute)
         {
             return animeAttribute switch

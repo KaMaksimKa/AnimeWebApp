@@ -1,0 +1,10 @@
+﻿@model ParserInfoViewModel
+<div class="row">
+	<table class="table table-striped">
+		<tr><td>Описание</td><td>@Model.Description</td></tr>
+		<tr><td>Надо сделать</td><td>@Model.NeedToDo</td></tr>
+		<tr><td>Сделано</td><td>@Model.Done</td></tr>
+		<tr><td>Текучий url</td><td>@Model.CurrentParsingUrl</td></tr>
+		<tr><td>Состояние cookies</td><td>@Model.IsCookiesGood</td></tr>
+	</table>
+</div>

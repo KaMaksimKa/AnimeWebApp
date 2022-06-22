@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Headers;
 using AngleSharp;
 using AngleSharp.Dom;
 using Newtonsoft.Json.Linq;
@@ -10,26 +9,20 @@ namespace AnimeWebApp.Models
     {
         public string DefaultUrl { get; set; } = "https://animego.org/anime";
         private readonly IBrowsingContext _context;
-        private HttpClient _clientJson;
-        private HttpClient _clientImg;
+        private HttpClient _httpClient;
+        private int _timeBetweenRequest;
+        public bool IsParsingNow { get; private set; } = false;
+        public string Cookies { get; set; } = "_ym_uid=1655761454412847163; _ym_d=1655761454; _ym_visorc=b; _ym_isad=2; _ga=GA1.2.647020422.1655761454; _gid=GA1.2.1695931329.1655761454; _gat_gtag_UA_111104961_1=1; __ddgid_=CYJlUGx7ZzZXXEev; __ddgmark_=TbWy6j7zaOdKURYU; __ddg5_=pi78mr5CeRXzVzkn; __ddg2_=bWehJXW1opppRaB9; __ddg1_=4AVL1fqjJqxZV0sKWMHW; device_view=full";
+        public bool IsCookiesGood { get; private set; } = true;
+        public int NeedToDo { get; private set; } = -1;
+        public int Done { get; private set; } = -1;
+        public string Description { get; private set; } = String.Empty;
+        public string CurrentParsingUrl { get; private set; } = String.Empty;
         public ParserAnimeGo()
         {
+            _timeBetweenRequest = 1000;
             _context = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
-            _clientImg = new HttpClient();
-            _clientJson = new HttpClient();
-            _clientJson.DefaultRequestHeaders.Accept.Clear();
-            _clientJson.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-            _clientJson.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("text/javascript"));
-            _clientJson.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue(@"*/*"));
-
-            _clientJson.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("ru"));
-            _clientJson.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("en"));
-            _clientJson.DefaultRequestHeaders.Add("User-Agent",
-                @"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.141 YaBrowser/22.3.3.852 Yowser/2.5 Safari/537.36");
-            _clientJson.DefaultRequestHeaders.Add("x-requested-with", "XMLHttpRequest");
+            _httpClient = new HttpClient();
         }
         public async Task<List<AnimeFromParser>> GetFullAnimeFromDefaultUrlAsync()
         {
@@ -37,11 +30,20 @@ namespace AnimeWebApp.Models
         }
         public async Task<List<AnimeFromParser>> GetFullAnimeFromUrlAsync(string url)
         {
+            if (IsParsingNow)
+            {
+                return new List<AnimeFromParser>();
+            }
             var animeList =await GetPartialAnimeFromUrlAsync(url);
+            NeedToDo = animeList.Count;
+            Done = 0;
+            Description = "Обновление частичной информации об ание до полной";
             int i = 0;
             foreach (var anime in animeList)
             {
                 await UpdateAllDataAnime(anime);
+                i += 1;
+                Done = i;
             }
             return animeList;
         }
@@ -51,6 +53,18 @@ namespace AnimeWebApp.Models
         }
         public async Task<List<AnimeFromParser>> GetPartialAnimeFromUrlAsync(string url)
         {
+            if (IsParsingNow)
+            {
+                return new List<AnimeFromParser>();
+            }
+            else
+            {
+                IsParsingNow = true;
+                Done = 0;
+                Description = "Получение поверхностной информации об аниме";
+            }
+            
+
             if (!url.Contains("?"))
             {
                 url += "?";
@@ -64,8 +78,8 @@ namespace AnimeWebApp.Models
                 try
                 {
                     string newUrl = url + $"&page={numberPage}";
+                    CurrentParsingUrl = newUrl;
                     page = await GetDocumentFromHtmlAsync(newUrl);
-
                     foreach (var e in page.QuerySelectorAll(".animes-list-item"))
                     {
                         string? href = e.QuerySelector(".h5")?.QuerySelector("a")?.GetAttribute("href")?.Trim();
@@ -94,8 +108,11 @@ namespace AnimeWebApp.Models
                     page?.Close();
                 }
                 numberPage++;
-            } while (page.StatusCode != HttpStatusCode.NotFound);
+                Done = animeList.Count;
+            } while (page.StatusCode == HttpStatusCode.OK);
 
+            IsParsingNow = false;
+            CurrentParsingUrl = String.Empty;
             return animeList;
         }
         public async Task<AnimeFromParser> GetMainDataAnimeAsync(string? hrefAnime, int idFromAnimeGo)
@@ -122,14 +139,18 @@ namespace AnimeWebApp.Models
             await UpdateAllDataAnime(anime);
             return anime;
         }
-
         public async Task UpdateMainDataAnimeAsync(AnimeFromParser anime)
         {
-            if (anime.Href == null)
+            if (anime.Href == null || IsParsingNow)
             {
                 return;
             }
-            
+            else
+            {
+                IsParsingNow = true;
+            }
+
+            CurrentParsingUrl = anime.Href;
             using var page =await GetDocumentFromHtmlAsync(anime.Href);
             if (page.StatusCode == HttpStatusCode.OK)
             {
@@ -178,17 +199,24 @@ namespace AnimeWebApp.Models
                 anime.Dubbing = anime.Dubbing.Union(voiceovers).ToList();
 
             }
-            
+            CurrentParsingUrl = String.Empty;
+            IsParsingNow = false;
         }
         public async Task UpdateShowDataAnimeAsync(AnimeFromParser anime)
         {
-            if (anime.IdFromAnimeGo == null)
+            if (anime.IdFromAnimeGo == null || IsParsingNow)
             {
                 return;
             }
-            Dictionary<string, string?> dictionary = new Dictionary<string, string?>();
+            else
+            {
+                IsParsingNow = true;
+            }
 
-            using var doc = await GetDocumentFromJsonAsync($"https://animego.org/animelist/{anime.IdFromAnimeGo}/show");
+            Dictionary<string, string?> dictionary = new Dictionary<string, string?>();
+            string url = $"https://animego.org/animelist/{anime.IdFromAnimeGo}/show";
+            CurrentParsingUrl = url;
+            using var doc = await GetDocumentFromJsonAsync(url);
             if (doc.StatusCode == HttpStatusCode.OK)
             {
                 foreach (var e in doc.QuerySelectorAll("tr").Skip(1))
@@ -224,15 +252,24 @@ namespace AnimeWebApp.Models
             anime.OnHold = onHold;
             anime.Watching = watching;
 
+            CurrentParsingUrl = String.Empty;
+            IsParsingNow = false;
         }
         public async Task UpdateVoiceoverDataAnimeFromFirstEpisodeAsync(AnimeFromParser anime)
         {
-            if (anime.IdFromAnimeGo == null)
+            if (anime.IdFromAnimeGo == null || IsParsingNow)
             {
                 return;
             }
+            else
+            {
+                IsParsingNow = true;
+            }
+
             List<string> list = new List<string>();
-            using var doc = await GetDocumentFromJsonAsync($"https://animego.org/anime/{anime.IdFromAnimeGo}/player?_allow=true");
+            string url = $"https://animego.org/anime/{anime.IdFromAnimeGo}/player?_allow=true";
+            CurrentParsingUrl = url;
+            using var doc = await GetDocumentFromJsonAsync(url);
             if (doc.StatusCode == HttpStatusCode.OK)
             {
                 if (doc.QuerySelector("#video-dubbing") is { } selector)
@@ -245,60 +282,44 @@ namespace AnimeWebApp.Models
             }
             anime.Dubbing = anime.Dubbing.Union(list).ToList();
 
-
+            CurrentParsingUrl = String.Empty;
+            IsParsingNow = false;
         }
         public async Task UpdateAllDataAnime(AnimeFromParser anime)
         {
-            try
-            {
-                await UpdateMainDataAnimeAsync(anime);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            try
-            {
-                await UpdateShowDataAnimeAsync(anime);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            try
-            {
-                await UpdateVoiceoverDataAnimeFromFirstEpisodeAsync(anime);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            await UpdateMainDataAnimeAsync(anime);
+            await UpdateShowDataAnimeAsync(anime);
+            await UpdateVoiceoverDataAnimeFromFirstEpisodeAsync(anime);
         }
         private async Task<IDocument> GetDocumentFromHtmlAsync(string url)
         {
-            await Task.Delay(300);
-            IDocument document = await _context.OpenAsync(url);
-            while (document.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                await Task.Delay(5000);
-                document = await _context.OpenAsync(url);
-            }
-            return document;
-        }
-        private async Task<IDocument> GetDocumentFromJsonAsync(string url)
-        {
-            await Task.Delay(300);
-            HttpResponseMessage message = await _clientJson.GetAsync(url);
+            await Task.Delay(_timeBetweenRequest);
+            HttpResponseMessage message = await GetResponseMessage(GetRequestMessage(url, Cookies, false));
             while (message.StatusCode == HttpStatusCode.TooManyRequests)
             {
                 await Task.Delay(5000);
-                message = await _clientJson.GetAsync(url);
+                message = await GetResponseMessage(GetRequestMessage(url, Cookies, false));
+            }
+            var html = await message.Content.ReadAsStringAsync();
+            return await _context.OpenAsync(req =>
+            {
+                req.Content(html);
+                req.Status(message.StatusCode);
+            });
+        }
+        private async Task<IDocument> GetDocumentFromJsonAsync(string url)
+        {
+            await Task.Delay(_timeBetweenRequest);
+            HttpResponseMessage message = await GetResponseMessage(GetRequestMessage(url, Cookies,true));
+            while (message.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                await Task.Delay(5000);
+                message = await GetResponseMessage(GetRequestMessage(url, Cookies, true));
             }
 
             var text = await message.Content.ReadAsStringAsync();
             JToken jToken = JToken.Parse(text);
             var html = jToken.Last?.Last?.ToString();
-            
 
             return await _context.OpenAsync(req =>
             {
@@ -312,37 +333,72 @@ namespace AnimeWebApp.Models
             {
                 return null;
             }
-            await Task.Delay(300);
-            var response = await _clientImg.GetAsync(url);
+            await Task.Delay(_timeBetweenRequest);
+            var response = await GetResponseMessage(GetRequestMessage(url, Cookies, false));
             while (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
                 await Task.Delay(5000);
-                response = await _clientImg.GetAsync(url);
+                response = await GetResponseMessage(GetRequestMessage(url, Cookies, false));
             }
             return await response.Content.ReadAsStreamAsync();
         }
         public async Task<Stream?> GetSteamPhotoFromAnimeHref(string? hrefAnime)
         {
-            if (hrefAnime == null)
+            if (hrefAnime == null || IsParsingNow)
             {
                 return null;
             }
+            else
+            {
+                IsParsingNow = true;
+            }
+
+            CurrentParsingUrl = hrefAnime;
             using var page = await GetDocumentFromHtmlAsync(hrefAnime);
             if (page.StatusCode == HttpStatusCode.OK)
             {
                 var url = page.QuerySelector(".anime-poster")?.QuerySelector("img")?.GetAttribute("src")?.Trim();
-                return await GetStreamFromUrl(url);
+                CurrentParsingUrl = url;
+                var stream= await GetStreamFromUrl(url);
+
+                IsParsingNow = false;
+                CurrentParsingUrl = String.Empty;
+                return stream;
             }
             else
             {
+                IsParsingNow = false;
+                CurrentParsingUrl = String.Empty;
                 return null;
             }
+
+
+        }
+        private HttpRequestMessage GetRequestMessage(string url, string cookies,bool isJson)
+        {
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri(url),
+                Method = HttpMethod.Get,
+            };
+            request.Headers.Add("User-Agent", " Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.160 YaBrowser/22.5.2.615 Yowser/2.5 Safari/537.36");
+            request.Headers.Add("Cookie", cookies);
+            if (isJson)
+            {
+                request.Headers.Add("x-requested-with", "XMLHttpRequest");
+            }
+            return request;
+        }
+        private async Task<HttpResponseMessage> GetResponseMessage(HttpRequestMessage requestMessage)
+        {
+            var response =await _httpClient.SendAsync(requestMessage);
+            IsCookiesGood = response.StatusCode != HttpStatusCode.Forbidden;
+            return response;
         }
         public void Dispose()
         {
             _context.Dispose();
-            _clientJson.Dispose();
-            _clientImg.Dispose();
+            _httpClient.Dispose();
         }
     }
 }
